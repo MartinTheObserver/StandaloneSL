@@ -209,4 +209,4 @@ threading.Thread(target=run_flask).start()
 # Start Bot
 # ---------------------------
 
-bot.run(TOKEN)
+bot.run(DISCORD_TOKEN)
