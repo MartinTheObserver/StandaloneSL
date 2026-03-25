@@ -161,7 +161,7 @@ async def prefix_songlink(ctx, *, query: str):
 @tree.command(
     name="sl",
     description="Song links + Genius",
-    
+)    
 async def slash_songlink(interaction: discord.Interaction, query: str):
 
     # Defer to give time for API calls
