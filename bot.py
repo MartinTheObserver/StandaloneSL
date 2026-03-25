@@ -178,16 +178,31 @@ async def slash_songlink(interaction: discord.Interaction, query: str):
 
 
 # ---------------------------
-# Bot Ready Event
+# Bot Events
 # ---------------------------
 
 @bot.event
 async def on_ready():
-
+    # Sync slash commands
     await tree.sync()
+    
+    # Print bot info
+    print(f"Bot is online as {bot.user}!")
+    print("Commands synced and ready to use.")
 
-    print("Commands synced")
 
+@bot.event
+async def on_message(message):
+    # Ignore messages from other bots
+    if message.author.bot:
+        return
+
+    # Debug: print every message
+    print(f"Message received: {message.content}")
+
+    # Process prefix commands
+    await bot.process_commands(message)
+    
 # ---------------------------
 # Keep-Alive Web Server
 # ---------------------------
