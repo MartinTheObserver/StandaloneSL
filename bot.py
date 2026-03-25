@@ -155,11 +155,10 @@ async def send_songlink_embed(ctx_or_interaction, song_data, is_slash=False):
 # ---------------------------
 # Commands
 # ---------------------------
+
 @bot.command(name="sl")
 async def prefix_songlink(ctx, *, query: str):
-    if ALLOWED_CHANNEL_ID and ctx.channel.id != ALLOWED_CHANNEL_ID:
-        return await ctx.send("This command is not allowed in this channel.")
-
+    """Prefix command: !sl <song/link>"""
     async with ctx.typing():
         song_data = await fetch_song_links(query, ctx)
     if not song_data:
@@ -167,13 +166,13 @@ async def prefix_songlink(ctx, *, query: str):
 
     await send_songlink_embed(ctx, song_data)
 
+
 @tree.command(name="sl", description="Get song links across platforms")
 async def slash_songlink(interaction: discord.Interaction, query: str):
-    if ALLOWED_CHANNEL_ID and interaction.channel_id != ALLOWED_CHANNEL_ID:
-        await interaction.response.send_message("Not allowed here.", ephemeral=True)
-        return
-
+    """Slash command: /sl <song/link>"""
+    # Defer immediately for slash commands
     await interaction.response.defer()
+
     song_data = await fetch_song_links(query, interaction, is_slash=True)
     if not song_data:
         await interaction.followup.send("Nothing found.")
