@@ -15,7 +15,6 @@ load_dotenv()
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GENIUS_API_KEY = os.getenv("GENIUS_API_KEY")
-GUILD_ID = int(os.getenv("GUILD_ID"))
 
 # ---------------------------
 # Discord Setup
