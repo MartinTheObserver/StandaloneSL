@@ -1,6 +1,6 @@
 import os
 import re
-import requests
+import aiohttp
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -140,18 +140,25 @@ async def send_songlink_embed(ctx_or_interaction, song_data, is_slash=False):
 # ---------------------------
 # Prefix Commands
 # ---------------------------
-
 @bot.command(name="sl")
 async def prefix_songlink(ctx, *, query: str):
+    print(f"[DEBUG] !sl called with query: {query}")
 
-    # Fetch song data
-    song_data = await fetch_song_links(query, ctx)
+    # Send a temporary "working" message so the user knows the bot is processing
+    working_msg = await ctx.send("Fetching song data... 🎵")
+
+    # Fetch song data asynchronously
+    song_data = await fetch_song_links_async(query, ctx, is_slash=False)
     if not song_data:
-        await ctx.send("Nothing found.")
+        await working_msg.edit(content="Nothing found.")
         return
 
-    # Send embed with Genius link + platforms
-    await send_songlink_embed(ctx, song_data)
+    try:
+        # Send embed with Genius link + platforms
+        await send_songlink_embed(ctx, song_data, is_slash=False)
+        await working_msg.delete()  # remove the temporary message
+    except Exception as e:
+        await working_msg.edit(content=f"Error building embed: {e}")
 
 
 # ---------------------------
