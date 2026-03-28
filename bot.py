@@ -41,6 +41,9 @@ async def fetch_song_links(query: str, interaction=None, is_slash=False):
     """Fetch song.link data asynchronously using aiohttp.""" 
     # 🔥 CLEAN INPUT (this is the fix) 
     query = query.strip().strip("'").strip('"')
+# inside fetch_song_links before session.get
+if "spotify.com" in query.lower():
+    await asyncio.sleep(1)  # tiny throttle for Spotify links
     url = "https://api.song.link/v1-alpha.1/links"
     params = {"url": query, "userCountry": "US"}
 
