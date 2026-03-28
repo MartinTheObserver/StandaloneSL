@@ -22,13 +22,9 @@ bot = commands.Bot(command_prefix=None, intents=intents)  # Slash commands only
 tree = bot.tree
 
 # ---------------------------
-# Persistent aiohttp Session
-# ---------------------------
-session: aiohttp.ClientSession = None  # will initialize in on_ready
-
-# ---------------------------
 # Helper Functions
 # ---------------------------
+
 def clean_song_title(title: str) -> str:
     """Cleans up a song title for better search results."""
     if not title:
@@ -41,16 +37,18 @@ def clean_song_title(title: str) -> str:
     return title.strip()
 
 
-async def fetch_song_links(query: str, interaction=None, is_slash=False):
-    """Fetch song.link data asynchronously using persistent session."""
-    global session
+async def fetch_song_links(query: str, interaction=None, is_slash=False): 
+    """Fetch song.link data asynchronously using aiohttp.""" 
+    # 🔥 CLEAN INPUT (this is the fix) 
+    query = query.strip().strip("'").strip('"')
     url = "https://api.song.link/v1-alpha.1/links"
     params = {"url": query, "userCountry": "US"}
 
     try:
-        async with session.get(url, params=params, timeout=20) as resp:
-            resp.raise_for_status()
-            return await resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, timeout=20) as resp:
+                resp.raise_for_status()
+                return await resp.json()
     except Exception as e:
         if is_slash and interaction:
             await interaction.followup.send(f"Error fetching song data: {e}")
@@ -58,8 +56,7 @@ async def fetch_song_links(query: str, interaction=None, is_slash=False):
 
 
 async def get_genius_link(title: str, artist: str):
-    """Fetch Genius URL asynchronously for a given song and artist using persistent session."""
-    global session
+    """Fetch Genius URL asynchronously for a given song and artist."""
     if not title or not GENIUS_API_KEY:
         return None
     clean_title_str = clean_song_title(title)
@@ -69,8 +66,9 @@ async def get_genius_link(title: str, artist: str):
     params = {"q": query}
 
     try:
-        async with session.get(url, headers=headers, params=params, timeout=20) as resp:
-            data = await resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers, params=params, timeout=20) as resp:
+                data = await resp.json()
         hits = data.get("response", {}).get("hits", [])
         for hit in hits:
             result = hit.get("result", {})
@@ -150,20 +148,9 @@ async def slash_songlink(interaction: discord.Interaction, query: str):
 # ---------------------------
 @bot.event
 async def on_ready():
-    global session
-    if session is None or session.closed:
-        session = aiohttp.ClientSession()  # Initialize persistent session
-
     await tree.sync()
     print(f"Bot is online as {bot.user}!")
     print("Slash commands synced and ready to use.")
-
-# Graceful shutdown of session
-@bot.event
-async def on_close():
-    global session
-    if session and not session.closed:
-        await session.close()
 
 # ---------------------------
 # Keep-Alive Web Server (Flask)
